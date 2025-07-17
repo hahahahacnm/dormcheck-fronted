@@ -4,6 +4,8 @@ This template should help get you started developing with Vue 3 and TypeScript i
 
 Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
 
+适配对应后端（增给每一个swmu的学生！）
+
 部署说明：
 1.高德地图JS SDK:使用前请前往开发者平台自行申请：并填入\src\components\MapContainer.vue
 2.指向后端地址更改：src\api\index.ts
