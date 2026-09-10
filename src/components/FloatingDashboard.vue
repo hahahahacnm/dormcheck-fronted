@@ -37,6 +37,16 @@
           <span class="text-indigo-700 font-semibold text-sm">{{ uptime }}</span>
         </li>
 
+        <!-- 版本更新 -->
+        <li class="flex flex-col gap-1">
+          <span class="text-xs text-gray-500">版本更新</span>
+          <ul class="list-disc pl-4 space-y-1 text-gray-800 text-sm">
+            <li><strong>2025年9月26日更新：</strong></li>
+            <li>✅ 增强兼容性：修复偶尔登录状态刷新失败后直接留白的问题。</li>
+            <li>✅ 国庆新增功能：支持不删除任务，直接设置暂停状态。</li>
+          </ul>
+        </li>
+
         <!-- 冷知识 -->
         <li class="flex flex-col gap-1">
           <span class="text-xs text-gray-500">开发冷知识</span>

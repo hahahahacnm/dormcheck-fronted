@@ -17,7 +17,7 @@ function setUser(newToken: string, newUserName: string, newUserEmail: string = '
 
 function clearUser() {
   token.value = null
-  userName.value = '游客'
+  userName.value = '未登录的用户：游客'
   userEmail.value = ''
   localStorage.removeItem('dormcheck_token')
 }

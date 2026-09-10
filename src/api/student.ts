@@ -32,12 +32,19 @@ export interface UnbindStudentResponse {
   message: string
 }
 
+export interface StudentPasswordResponse {
+  stuId: string
+  password: string
+}
+
 export interface Activity {
   id: number | string
   name: string
 }
 
 export interface Task {
+  ActivityName: string
+  Name: string
   NotifyEmail: string
   ID: number
   UserID: number
@@ -64,8 +71,13 @@ export interface CreateTaskPayload {
   latitude: number
   sign_time: string
   max_retry: number
+  notify_email?: string
   name: string           // 新增：学生姓名
   activity_name: string  // 新增：活动名称
+}
+
+export interface UpdateTaskPayload extends CreateTaskPayload {
+  task_id: number
 }
 
 export const student = {
@@ -97,9 +109,11 @@ export const student = {
       const resp = await instance.post('/student/bind', data)
       return resp.data
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || '绑定学生失败')
+      // 抛出完整响应对象而非仅 message
+      throw error.response?.data || { message: '绑定学生失败' }
     }
   },
+
 
   // 解绑学生账号
   unbindStudentApi: async (data: UnbindStudentRequest): Promise<UnbindStudentResponse> => {
@@ -118,6 +132,16 @@ export const student = {
       return resp.data
     } catch (error: any) {
       throw new Error(error.response?.data?.message || '获取活动失败')
+    }
+  },
+
+  // 查询单个学生的当前已存储密码
+  getStudentPassword: async (stuId: string): Promise<ApiResponse<StudentPasswordResponse>> => {
+    try {
+      const resp = await instance.get(`/student/password/${encodeURIComponent(stuId)}`)
+      return resp.data
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || '获取学生密码失败')
     }
   },
 
@@ -143,6 +167,15 @@ export const student = {
   },
 
   // 删除签到任务
+  updateTask: async (data: UpdateTaskPayload): Promise<ApiResponse<Task>> => {
+    try {
+      const resp = await instance.post('/student/task/update', data)
+      return resp.data
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || '修改任务失败')
+    }
+  },
+
   deleteTask: async (task_id: number): Promise<ApiResponse<any>> => {
     try {
       const resp = await instance.post('/student/task/delete', { task_id })
@@ -151,4 +184,15 @@ export const student = {
       throw new Error(error.response?.data?.message || '删除任务失败')
     }
   },
+
+  // 暂停/恢复签到任务
+  toggleTask: async (task_id: number, enabled: boolean): Promise<ApiResponse<any>> => {
+    try {
+      const resp = await instance.post('/student/task/toggle', { task_id, enabled })
+      return resp.data
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || '切换任务状态失败')
+    }
+  },
+
 }

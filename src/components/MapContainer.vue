@@ -1,46 +1,83 @@
 <template>
-  <div class="relative">
-    <!-- 搜索框 -->
-    <div class="mb-2">
-      <div class="flex gap-2 relative">
+  <div class="space-y-3">
+    <div class="rounded-lg border border-slate-200 bg-slate-50/90 p-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="min-w-0">
+          <div class="text-sm font-semibold text-slate-800">当前签到地点</div>
+          <div class="mt-1 break-words text-sm text-slate-600">
+            {{ displayAddress }}
+          </div>
+          <div v-if="hasLocation" class="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
+            <span class="rounded bg-white px-2 py-1">经度 {{ formatCoord(props.initialLocation?.lng) }}</span>
+            <span class="rounded bg-white px-2 py-1">纬度 {{ formatCoord(props.initialLocation?.lat) }}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="shrink-0 rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+          @click="openMap"
+        >
+          {{ mapVisible ? '重新定位' : hasLocation ? '修改定位' : '选择定位' }}
+        </button>
+      </div>
+    </div>
+
+    <div v-if="mapVisible" class="space-y-3 rounded-lg border border-slate-200 bg-white p-3">
+      <div class="relative flex flex-col gap-2 sm:flex-row">
         <input
           v-model="searchKeyword"
           type="text"
-          class="flex-grow px-4 py-2 border rounded-md"
-          placeholder="输入地点名称"
+          class="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+          placeholder="输入地点名称搜索"
           @keyup.enter.prevent="searchPlace"
         />
-        <button type="button" class="bg-blue-600 text-white px-4 rounded" @click="searchPlace">搜索</button>
+        <button
+          type="button"
+          class="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+          :disabled="loadingMap"
+          @click="searchPlace"
+        >
+          搜索
+        </button>
 
-        <!-- 绝对定位搜索结果列表 -->
         <ul
           v-if="searchResults.length"
-          class="absolute left-0 right-0 bg-white border rounded mt-1 max-h-48 overflow-y-auto z-10 shadow-md"
-          style="top: 100%;"
+          class="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-md border border-slate-200 bg-white text-sm shadow-lg"
         >
           <li
             v-for="(item, index) in searchResults"
             :key="index"
-            class="p-2 cursor-pointer hover:bg-blue-100"
+            class="cursor-pointer px-3 py-2 hover:bg-teal-50"
             @click="selectSearchResult(item)"
           >
-            {{ item.name }} — {{ item.address }}
+            <div class="font-medium text-slate-800">{{ item.name }}</div>
+            <div class="truncate text-xs text-slate-500">{{ item.address || '暂无详细地址' }}</div>
           </li>
         </ul>
       </div>
-    </div>
 
-    <!-- 地图容器 -->
-    <div id="container" class="w-full h-64 border rounded"></div>
+      <div class="relative overflow-hidden rounded-lg border border-slate-200">
+        <div ref="mapContainer" class="h-72 w-full bg-slate-100 sm:h-80"></div>
+        <div
+          v-if="loadingMap"
+          class="absolute inset-0 grid place-items-center bg-white/80 text-sm text-slate-600 backdrop-blur-sm"
+        >
+          地图加载中...
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500">
+        只有在这里搜索或点击地图时，才会更新地点和经纬度。
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import AMapLoader from '@amap/amap-jsapi-loader'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useToast } from '../composables/useToast'
 
-// ✅ 修复 TS 报错：声明 window._AMapSecurityConfig 类型
 declare global {
   interface Window {
     _AMapSecurityConfig?: {
@@ -53,65 +90,102 @@ const emit = defineEmits<{
   (e: 'update', data: { lng: number; lat: number; address: string }): void
 }>()
 
-const searchKeyword = ref('')
-const searchResults = ref<any[]>([])
-const map = ref<any>(null)
-const marker = ref<any>(null)
+const props = defineProps<{
+  initialLocation?: { lng: number; lat: number; address: string }
+}>()
 
 const { show } = useToast()
 
-onMounted(() => {
-  window._AMapSecurityConfig = {
-    securityJsCode: '高德地图JS SDK安全密钥！（自定义）',
-  }
+const mapContainer = ref<HTMLElement | null>(null)
+const searchKeyword = ref('')
+const searchResults = ref<any[]>([])
+const mapVisible = ref(false)
+const loadingMap = ref(false)
+const amapApi = ref<any>(null)
+const map = ref<any>(null)
+const marker = ref<any>(null)
 
-  AMapLoader.load({
-    key: '高德地图JS SDK秘钥！（自定义）',
-    version: '2.0',
-    plugins: ['AMap.Geocoder', 'AMap.PlaceSearch'],
-  })
-    .then((AMap) => {
-      map.value = new AMap.Map('container', {
-        viewMode: '2D',
-        zoom: 15,
-        center: [105.446113, 28.883955],
-      })
+const hasLocation = computed(() => Boolean(props.initialLocation?.lng && props.initialLocation?.lat))
+const displayAddress = computed(() => props.initialLocation?.address || '还没有选择签到地点')
 
-      marker.value = new AMap.Marker({ map: map.value })
-
-      map.value.on('click', (e: any) => {
-        const lnglat = e.lnglat
-        marker.value.setPosition(lnglat)
-
-        const geocoder = new AMap.Geocoder({ radius: 1000, extensions: 'all' })
-        geocoder.getAddress(lnglat, (status: string, result: any) => {
-          if (status === 'complete' && result.regeocode) {
-            const addr = result.regeocode.formattedAddress
-            emit('update', {
-              lng: lnglat.lng,
-              lat: lnglat.lat,
-              address: addr,
-            })
-          }
-        })
-      })
-    })
-    .catch((e) => {
-      console.error('AMap 加载失败', e)
-    })
-})
+watch(
+  () => props.initialLocation,
+  () => {
+    if (mapVisible.value) applyInitialLocation()
+  },
+  { deep: true },
+)
 
 onUnmounted(() => {
   map.value?.destroy()
 })
 
-function searchPlace() {
-  if (!searchKeyword.value.trim()) {
+async function openMap() {
+  mapVisible.value = true
+  await nextTick()
+  await ensureMap()
+}
+
+async function ensureMap() {
+  if (map.value || loadingMap.value) return
+
+  loadingMap.value = true
+  try {
+    const { loadAMap } = await import('../utils/amap')
+    const AMap = await loadAMap()
+
+    amapApi.value = AMap
+    map.value = new AMap.Map(mapContainer.value, {
+      viewMode: '2D',
+      zoom: 15,
+      center: props.initialLocation?.lng && props.initialLocation?.lat
+        ? [props.initialLocation.lng, props.initialLocation.lat]
+        : [105.446113, 28.883955],
+    })
+    marker.value = new AMap.Marker({ map: map.value })
+    applyInitialLocation()
+
+    map.value.on('click', (e: any) => {
+      const lnglat = e.lnglat
+      marker.value.setPosition(lnglat)
+
+      const geocoder = new AMap.Geocoder({ radius: 1000, extensions: 'all' })
+      geocoder.getAddress(lnglat, (status: string, result: any) => {
+        if (status === 'complete' && result.regeocode) {
+          emit('update', {
+            lng: lnglat.lng,
+            lat: lnglat.lat,
+            address: result.regeocode.formattedAddress,
+          })
+        }
+      })
+    })
+  } catch (e) {
+    console.error('AMap 加载失败', e)
+    show('地图加载失败，请稍后重试', 'error')
+  } finally {
+    loadingMap.value = false
+  }
+}
+
+function applyInitialLocation() {
+  if (!map.value || !marker.value || !props.initialLocation) return
+  const { lng, lat, address } = props.initialLocation
+  if (!lng || !lat) return
+  const position = [lng, lat]
+  map.value.setZoomAndCenter(17, position)
+  marker.value.setPosition(position)
+  searchKeyword.value = address || ''
+}
+
+async function searchPlace() {
+  await ensureMap()
+  if (!amapApi.value || !searchKeyword.value.trim()) {
     searchResults.value = []
     return
   }
 
-  const placeSearch = new AMap.PlaceSearch({
+  const placeSearch = new amapApi.value.PlaceSearch({
     pageSize: 10,
     city: '',
     citylimit: false,
@@ -145,16 +219,8 @@ function selectSearchResult(item: any) {
   searchKeyword.value = item.name
   searchResults.value = []
 }
-</script>
 
-<style scoped>
-#container {
-  width: 100%;
-  height: 16rem; /* h-64 */
+function formatCoord(value?: number) {
+  return typeof value === 'number' ? value.toFixed(6) : '-'
 }
-ul {
-  list-style-type: none;
-  padding-left: 0;
-  margin: 0;
-}
-</style>
+</script>
