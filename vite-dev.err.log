@@ -1,0 +1,59 @@
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[1m[33m[@vue/compiler-sfc][0m[33m `defineEmits` is a compiler macro and no longer needs to be imported.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m `defineExpose` is a compiler macro and no longer needs to be imported.[0m
+
+[2m17:30:01[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <ol> cannot be child of <p>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+53 |                <p class="mt-2">
+54 |                  正确操作顺序：
+55 |                  <ol class="list-decimal list-inside ml-4 space-y-1 mt-1">
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+56 |                    <li>先在
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^
+57 |                      <a
+   |  ^^^^^^^^^^^^^^^^^^^^^^
+58 |                        href="http://plat.swmu.edu.cn/Authentication/?returnUrl=http://me.swmu.edu.cn/"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+59 |                        class="text-blue-600 font-semibold hover:underline"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+60 |                        target="_blank"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+61 |                        rel="noopener noreferrer"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+62 |                      >
+   |  ^^^^^^^^^^^^^^^^^^^^^
+63 |                        学工一体化平台
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+64 |                      </a>
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^
+65 |                      使用初始密码登录并按平台提示修改为自己合格的新密码
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+66 |                    </li>
+   |  ^^^^^^^^^^^^^^^^^^^^^^^
+67 |                    <li>回到
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^
+68 |                      <a
+   |  ^^^^^^^^^^^^^^^^^^^^^^
+69 |                        href="https://dc.kikirepository.cn/student-bind/"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+70 |                        class="text-blue-600 font-semibold hover:underline"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+71 |                        target="_blank"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+72 |                        rel="noopener noreferrer"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+73 |                      >
+   |  ^^^^^^^^^^^^^^^^^^^^^
+74 |                        DormCheck
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+75 |                      </a>
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^
+76 |                      使用合格的新密码发起学号绑定</li>
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+77 |                  </ol>
+   |  ^^^^^^^^^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mD:/BaiduNetdiskDownload/DormCheck/dormcheck/dormcheck前端/src/components/HowToUseModal.vue[39m
+[2m17:35:24[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/layouts/MainLayout.vue (resolved id: D:/BaiduNetdiskDownload/DormCheck/dormcheck/dormcheck前端/src/layouts/MainLayout.vue) in D:/BaiduNetdiskDownload/DormCheck/dormcheck/dormcheck前端/src/router/index.ts. Does the file exist?
